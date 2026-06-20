@@ -1,16 +1,396 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="es">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Catálogo</title>
-    <link rel="stylesheet" href="css/styles.css" />
-    <link rel="stylesheet" href="css/viewer.css" />
-  </head>
-  <body>
-    <div id="app" class="viewer-stage">
-      <p id="loadingMsg" class="viewer-message">Cargando catálogo…</p>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>IntegraMec Rosario srl — Ingeniería Electromecánica Industrial</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=Figtree:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+
+    :root {
+      --navy:   #0f2451;
+      --navy-2: #1B3A6B;
+      --orange: #f97316;
+      --ease:   cubic-bezier(0.32, 0.72, 0, 1);
+    }
+
+    body {
+      font-family: 'Figtree', sans-serif;
+      background: #fff;
+      color: #1e293b;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    h1, h2, h3 { font-family: 'Playfair Display', serif; }
+
+    /* ── Top bar ─────────────────── */
+    .top-bar {
+      background: var(--navy);
+      font-size: 11px;
+      padding: 0.5rem 1.5rem;
+      color: #94a3b8;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    /* ── Sticky nav ──────────────── */
+    .nav-main {
+      background: rgba(255,255,255,0.95);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid #e2e8f0;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      box-shadow: 0 1px 24px rgba(15,36,81,0.06);
+    }
+
+    /* ── Hero ────────────────────── */
+    .hero-section {
+      position: relative;
+      min-height: 620px;
+      display: flex;
+      align-items: center;
+      overflow: hidden;
+      background: var(--navy);
+    }
+    .hero-section img {
+      position: absolute; inset: 0;
+      width: 100%; height: 100%;
+      object-fit: cover;
+      opacity: 0.18;
+    }
+    .hero-overlay {
+      position: absolute; inset: 0;
+      background: linear-gradient(130deg, rgba(15,36,81,0.97) 0%, rgba(15,36,81,0.82) 55%, rgba(15,36,81,0.5) 100%);
+    }
+    /* geometric accent */
+    .hero-section::after {
+      content: '';
+      position: absolute;
+      right: 0; top: 0; bottom: 0;
+      width: 38%;
+      background: linear-gradient(to left, rgba(249,115,22,0.04), transparent);
+      pointer-events: none;
+    }
+
+    /* ── Buttons ─────────────────── */
+    .btn-orange {
+      display: inline-flex; align-items: center; justify-content: center;
+      background: var(--orange); color: #fff;
+      font-family: 'Figtree', sans-serif; font-weight: 700; font-size: 0.9375rem;
+      padding: 0.875rem 2rem; border-radius: 0.625rem;
+      transition: all 0.35s var(--ease);
+      text-decoration: none;
+    }
+    .btn-orange:hover { background: #ea6c0a; transform: translateY(-2px); box-shadow: 0 8px 28px rgba(249,115,22,0.35); }
+    .btn-ghost {
+      display: inline-flex; align-items: center; justify-content: center;
+      border: 1px solid rgba(255,255,255,0.25); color: #fff;
+      font-family: 'Figtree', sans-serif; font-weight: 600; font-size: 0.9375rem;
+      padding: 0.875rem 2rem; border-radius: 0.625rem;
+      background: rgba(255,255,255,0.07); backdrop-filter: blur(8px);
+      transition: all 0.35s var(--ease); text-decoration: none;
+    }
+    .btn-ghost:hover { background: rgba(255,255,255,0.14); }
+
+    /* ── Service card ────────────── */
+    .svc-card {
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      border-radius: 1rem;
+      overflow: hidden;
+      transition: transform 0.45s var(--ease), box-shadow 0.45s var(--ease), border-color 0.35s;
+    }
+    .svc-card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 20px 50px rgba(15,36,81,0.12);
+      border-color: rgba(249,115,22,0.3);
+    }
+    .svc-card:hover .svc-accent { width: 48px; }
+    .svc-accent {
+      width: 32px; height: 3px; background: var(--orange);
+      border-radius: 2px; margin-bottom: 0.75rem;
+      transition: width 0.4s var(--ease);
+    }
+    .svc-img {
+      height: 11rem; background: #f1f5f9; overflow: hidden;
+    }
+    .svc-img img { width: 100%; height: 100%; object-fit: contain; transition: transform 0.6s var(--ease); }
+    .svc-card:hover .svc-img img { transform: scale(1.05); }
+
+    /* ── Scroll reveal ────────────── */
+    .reveal {
+      opacity: 0; transform: translateY(24px);
+      transition: opacity 0.8s var(--ease), transform 0.8s var(--ease);
+    }
+    .reveal.in { opacity: 1; transform: translateY(0); }
+    .reveal-d1 { transition-delay: 0.08s; }
+    .reveal-d2 { transition-delay: 0.16s; }
+    .reveal-d3 { transition-delay: 0.24s; }
+    .reveal-d4 { transition-delay: 0.32s; }
+
+    /* ── Scrollbar hide ───────────── */
+    ::-webkit-scrollbar { display: none; }
+    * { scrollbar-width: none; }
+
+    /* ── Eyebrow ─────────────────── */
+    .eyebrow {
+      font-size: 11px; text-transform: uppercase;
+      letter-spacing: 0.2em; font-weight: 600; font-family: 'Figtree', sans-serif;
+    }
+
+    /* ── Badge strip ─────────────── */
+    .badge {
+      display: inline-flex; align-items: center; gap: 0.375rem;
+      font-size: 11px; font-family: 'Figtree', sans-serif;
+      font-weight: 500; text-transform: uppercase; letter-spacing: 0.12em;
+      padding: 0.3rem 0.8rem; border-radius: 9999px;
+      border: 1px solid;
+    }
+
+    /* ── Section divider ─────────── */
+    .section-rule {
+      width: 52px; height: 3px; background: var(--orange);
+      border-radius: 2px; margin: 0.75rem auto 0;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top bar -->
+  <div class="top-bar">
+    <span>Ingeniería electromecánica industrial desde 1983 · Rosario, Argentina</span>
+    <div style="display:flex;gap:1.5rem;">
+      <span>✉ integramec@email.com</span>
+      <a href="https://wa.me/5493471683013" target="_blank" rel="noopener noreferrer" style="color:inherit;text-decoration:none;">📱 WhatsApp disponible</a>
     </div>
-    <script type="module" src="js/viewer.js"></script>
-  </body>
+  </div>
+
+  <!-- Navbar -->
+  <nav class="nav-main">
+    <div style="max-width:1200px;margin:0 auto;padding:1rem 1.5rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;">
+      <div style="display:flex;align-items:center;gap:0.75rem;">
+        <div style="width:40px;height:40px;background:var(--navy-2);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <span style="color:#fff;font-family:'Playfair Display',serif;font-weight:700;font-size:14px;">IM</span>
+        </div>
+        <div>
+          <p style="font-family:'Playfair Display',serif;font-weight:700;color:var(--navy);font-size:1rem;line-height:1.1;">IntegraMec Rosario srl</p>
+          <p style="font-size:11px;color:#94a3b8;font-family:'Figtree',sans-serif;">Ingeniería Electromecánica &amp; Mecatrónica</p>
+        </div>
+      </div>
+      <div style="display:none;" class="md-links">
+        <a href="#servicios" style="font-size:0.875rem;color:#475569;text-decoration:none;font-weight:500;transition:color 0.2s;" onmouseover="this.style.color='#0f2451'" onmouseout="this.style.color='#475569'">Servicios</a>
+        <a href="#nosotros"  style="font-size:0.875rem;color:#475569;text-decoration:none;font-weight:500;margin-left:1.5rem;" onmouseover="this.style.color='#0f2451'" onmouseout="this.style.color='#475569'">Nosotros</a>
+        <a href="#contacto"  style="font-size:0.875rem;color:#475569;text-decoration:none;font-weight:500;margin-left:1.5rem;" onmouseover="this.style.color='#0f2451'" onmouseout="this.style.color='#475569'">Contacto</a>
+      </div>
+      <a href="#contacto" class="btn-orange" style="font-size:0.875rem;padding:0.6rem 1.25rem;border-radius:0.5rem;">Solicitar Presupuesto</a>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <section class="hero-section">
+    <img src="img/hero.jpg" alt="IntegraMec Rosario" onerror="this.style.display='none'" />
+    <div class="hero-overlay"></div>
+    <div style="position:relative;z-index:10;max-width:1200px;margin:0 auto;padding:5rem 1.5rem;width:100%;">
+      <div style="max-width:680px;">
+        <div class="reveal" style="margin-bottom:1.5rem;">
+          <span class="badge" style="color:#fb923c;border-color:rgba(249,115,22,0.35);background:rgba(249,115,22,0.12);">
+            <span style="width:6px;height:6px;border-radius:50%;background:#f97316;display:block;"></span>
+            Desde 1983
+          </span>
+        </div>
+        <h1 class="reveal reveal-d1" style="font-size:clamp(2.25rem,5.5vw,3.75rem);color:#fff;line-height:1.12;font-weight:800;margin-bottom:1.25rem;">
+          Ingeniería Electromecánica &amp;<br/>Mecatrónica Industrial
+        </h1>
+        <p class="reveal reveal-d2" style="font-size:1.125rem;color:#94a3b8;line-height:1.7;margin-bottom:2.25rem;max-width:540px;">
+          Soluciones de alta precisión para empresas distribuidoras de energía, municipalidades, gobiernos provinciales y sector agroindustrial.
+        </p>
+        <div class="reveal reveal-d3" style="display:flex;flex-wrap:wrap;gap:0.75rem;">
+          <a href="#contacto" class="btn-orange">Solicitar Presupuesto</a>
+          <a href="#servicios" class="btn-ghost">Ver Servicios</a>
+        </div>
+      </div>
+    </div>
+    <!-- Geometric corner accent -->
+    <div aria-hidden="true" style="position:absolute;bottom:2rem;right:2.5rem;width:80px;height:80px;border-right:2px solid rgba(249,115,22,0.2);border-bottom:2px solid rgba(249,115,22,0.2);"></div>
+  </section>
+
+  <!-- Stats strip -->
+  <div style="background:var(--navy-2);">
+    <div style="max-width:1200px;margin:0 auto;padding:2rem 1.5rem;display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:1.5rem;text-align:center;">
+      <div class="reveal"><p style="font-family:'Playfair Display',serif;font-size:2.25rem;font-weight:800;color:#f97316;">40+</p><p style="font-size:0.8125rem;color:#94a3b8;margin-top:0.25rem;">Años de experiencia</p></div>
+      <div class="reveal reveal-d1"><p style="font-family:'Playfair Display',serif;font-size:2.25rem;font-weight:800;color:#f97316;">INPI</p><p style="font-size:0.8125rem;color:#94a3b8;margin-top:0.25rem;">Registros 9, 37 y 42</p></div>
+      <div class="reveal reveal-d2"><p style="font-family:'Playfair Display',serif;font-size:1.0625rem;font-weight:800;color:#f97316;line-height:1.25;">Certificaciones<br/>IRAM-UTN</p><p style="font-size:0.8125rem;color:#94a3b8;margin-top:0.25rem;">Certificadas</p></div>
+      <div class="reveal reveal-d3"><p style="font-family:'Playfair Display',serif;font-size:2.25rem;font-weight:800;color:#f97316;">24h</p><p style="font-size:0.8125rem;color:#94a3b8;margin-top:0.25rem;">Tiempo de respuesta</p></div>
+    </div>
+  </div>
+
+  <!-- Servicios -->
+  <section id="servicios" style="padding:6rem 1.5rem;background:#f8fafc;">
+    <div style="max-width:1200px;margin:0 auto;">
+      <div class="reveal" style="text-align:center;margin-bottom:3.5rem;">
+        <p class="eyebrow" style="color:var(--orange);margin-bottom:0.5rem;">Lo que hacemos</p>
+        <h2 style="font-size:clamp(1.75rem,4vw,2.5rem);color:var(--navy);">Servicios Especializados</h2>
+        <div class="section-rule"></div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1.25rem;">
+
+        <div class="svc-card reveal">
+          <div class="svc-img"><img src="img/WhatsApp Image 2026-06-16 at 14.30.31.jpeg" alt="Diseño y construcción" onerror="this.parentElement.style.background='#dbeafe'" /></div>
+          <div style="padding:1.5rem;">
+            <div class="svc-accent"></div>
+            <h3 style="font-size:1.0625rem;color:var(--navy);margin-bottom:0.5rem;">Diseño y Construcción de Equipos</h3>
+            <p style="font-size:0.875rem;color:#64748b;line-height:1.65;">Equipos electromecánicos mecatrónicos industriales con patentes propias registradas en el INPI. Cabezal electromecanico a control remoto para poda de altura adaptable a gruas.</p>
+          </div>
+        </div>
+
+        <div class="svc-card reveal reveal-d1">
+          <div class="svc-img"><img src="img/WhatsApp Image 2026-06-16 at 14.56.50.jpeg" alt="Bombas sumergibles" onerror="this.parentElement.style.background='#dbeafe'" /></div>
+          <div style="padding:1.5rem;">
+            <div class="svc-accent"></div>
+            <h3 style="font-size:1.0625rem;color:var(--navy);margin-bottom:0.5rem;">Bombas Sumergibles</h3>
+            <p style="font-size:0.875rem;color:#64748b;line-height:1.65;">Servicio técnico en bombas sumergibles de gran tamaño para instalaciones industriales de alta demanda.</p>
+          </div>
+        </div>
+
+        <div class="svc-card reveal reveal-d2">
+          <div class="svc-img"><img src="img/WhatsApp Image 2026-06-16 at 14.35.57.jpeg" alt="Cabezales para grúas" onerror="this.parentElement.style.background='#dbeafe'" /></div>
+          <div style="padding:1.5rem;">
+            <div class="svc-accent"></div>
+            <h3 style="font-size:1.0625rem;color:var(--navy);margin-bottom:0.5rem;">Cabezales para Grúas</h3>
+            <p style="font-size:0.875rem;color:#64748b;line-height:1.65;">Fabricación de cabezales mecanizados a control remoto para adaptar a grúas industriales. Cabezales electromecanicos mecatronicos a control remoto con aislacion dielectrica hasta 66kv para trabajos de poda debajo de lineas aereas de media tension.</p>
+          </div>
+        </div>
+
+        <div class="svc-card reveal reveal-d3">
+          <div class="svc-img"><img src="img/WhatsApp Image 2026-06-16 at 15.20.42.jpeg" alt="Puesta a tierra" onerror="this.parentElement.style.background='#dbeafe'" /></div>
+          <div style="padding:1.5rem;">
+            <div class="svc-accent"></div>
+            <h3 style="font-size:1.0625rem;color:var(--navy);margin-bottom:0.5rem;">Puesta a Tierra &amp; Pararrayos</h3>
+            <p style="font-size:0.875rem;color:#64748b;line-height:1.65;">Estudios sobre aislación dieléctrica, pararrayos y puesta a tierra para infraestructura eléctrica.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Nosotros -->
+  <section id="nosotros" style="padding:6rem 1.5rem;background:#fff;">
+    <div style="max-width:1200px;margin:0 auto;display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:4rem;align-items:center;">
+      <div class="reveal">
+        <p class="eyebrow" style="color:var(--orange);margin-bottom:0.75rem;">Sobre nosotros</p>
+        <h2 style="font-size:clamp(1.75rem,4vw,2.5rem);color:var(--navy);margin-bottom:1.5rem;">Más de 40 Años de Ingeniería Industrial</h2>
+        <p style="font-size:0.9375rem;color:#475569;line-height:1.75;margin-bottom:1rem;">
+          Desde 1983, IntegraMec Rosario srl crea soluciones electromecánicas para el sector industrial público y privado. Registros INPI en las categorías 9, 37 y 42, y patentes de proyectos mecatrónicos propios.
+        </p>
+        <p style="font-size:0.9375rem;color:#475569;line-height:1.75;margin-bottom:2rem;">
+          Clientes: empresas distribuidoras de energía, municipalidades, gobiernos provinciales, plantas de acopio de cereales y sector de líneas de media tensión.
+        </p>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+          <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:0.75rem;padding:1.25rem;">
+            <p style="font-family:'Playfair Display',serif;font-weight:700;color:var(--navy);font-size:1.25rem;">INPI 9/37/42</p>
+            <p style="font-size:0.8125rem;color:#94a3b8;margin-top:0.25rem;">Registros nacionales</p>
+          </div>
+          <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:0.75rem;padding:1.25rem;">
+            <p style="font-family:'Playfair Display',serif;font-weight:700;color:var(--navy);font-size:1.25rem;">Desde 1983</p>
+            <p style="font-size:0.8125rem;color:#94a3b8;margin-top:0.25rem;">En el mercado industrial</p>
+          </div>
+        </div>
+      </div>
+      <div class="reveal reveal-d2" style="position:relative;">
+        <div style="border-radius:1.25rem;overflow:hidden;background:#e2e8f0;height:22rem;box-shadow:0 20px 60px rgba(15,36,81,0.14);">
+          <img src="img/WhatsApp Image 2026-06-05 at 17.54.02.jpeg" alt="IntegraMec equipo" style="width:100%;height:100%;object-fit:cover;" />
+        </div>
+        <div style="position:absolute;bottom:-1.25rem;left:-1.25rem;background:var(--orange);color:#fff;border-radius:0.875rem;padding:1rem 1.5rem;box-shadow:0 8px 32px rgba(249,115,22,0.35);">
+          <p style="font-family:'Playfair Display',serif;font-size:1.75rem;font-weight:800;line-height:1;">40+</p>
+          <p style="font-size:0.75rem;margin-top:0.25rem;opacity:0.9;">Años de trayectoria</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Clientes -->
+  <section style="padding:4rem 1.5rem;background:#f8fafc;">
+    <div style="max-width:1200px;margin:0 auto;text-align:center;">
+      <p class="eyebrow reveal" style="color:var(--orange);margin-bottom:0.75rem;">Sectores que atendemos</p>
+      <h2 class="reveal reveal-d1" style="font-size:1.875rem;color:var(--navy);margin-bottom:2.5rem;">Nuestros Clientes</h2>
+      <div class="reveal reveal-d2" style="display:flex;flex-wrap:wrap;justify-content:center;gap:0.75rem;max-width:800px;margin:0 auto;">
+        <span style="background:#fff;border:1px solid #e2e8f0;color:#475569;font-size:0.875rem;padding:0.5rem 1.25rem;border-radius:9999px;font-family:'Figtree',sans-serif;">Distribución de Energía Eléctrica</span>
+        <span style="background:#fff;border:1px solid #e2e8f0;color:#475569;font-size:0.875rem;padding:0.5rem 1.25rem;border-radius:9999px;font-family:'Figtree',sans-serif;">Municipalidades</span>
+        <span style="background:#fff;border:1px solid #e2e8f0;color:#475569;font-size:0.875rem;padding:0.5rem 1.25rem;border-radius:9999px;font-family:'Figtree',sans-serif;">Gobiernos Provinciales</span>
+        <span style="background:#fff;border:1px solid #e2e8f0;color:#475569;font-size:0.875rem;padding:0.5rem 1.25rem;border-radius:9999px;font-family:'Figtree',sans-serif;">Plantas de Acopio de Cereales</span>
+        <span style="background:#fff;border:1px solid #e2e8f0;color:#475569;font-size:0.875rem;padding:0.5rem 1.25rem;border-radius:9999px;font-family:'Figtree',sans-serif;">Poda bajo Líneas de Media Tensión</span>
+        <span style="background:#fff;border:1px solid #e2e8f0;color:#475569;font-size:0.875rem;padding:0.5rem 1.25rem;border-radius:9999px;font-family:'Figtree',sans-serif;">Sector Privado Industrial</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA Banner -->
+  <section style="background:var(--navy-2);padding:5rem 1.5rem;">
+    <div style="max-width:720px;margin:0 auto;text-align:center;">
+      <h2 class="reveal" style="font-size:clamp(1.75rem,4vw,2.5rem);color:#fff;margin-bottom:1rem;">¿Necesita una solución electromecánica?</h2>
+      <p class="reveal reveal-d1" style="color:#94a3b8;font-size:1.0625rem;margin-bottom:2.25rem;line-height:1.65;">Contactenos para evaluar su proyecto. Respondemos en menos de 24 horas.</p>
+      <div class="reveal reveal-d2" style="display:flex;flex-wrap:wrap;gap:0.75rem;justify-content:center;">
+        <a href="https://wa.me/5493471683013" target="_blank" rel="noopener noreferrer" class="btn-orange">Escribir por WhatsApp</a>
+        <a href="mailto:integramec@email.com" class="btn-ghost">Enviar Email</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Contacto -->
+  <section id="contacto" style="padding:5rem 1.5rem;background:#fff;">
+    <div style="max-width:1200px;margin:0 auto;text-align:center;">
+      <p class="eyebrow reveal" style="color:var(--orange);margin-bottom:0.5rem;">Contacto</p>
+      <h2 class="reveal reveal-d1" style="font-size:2rem;color:var(--navy);margin-bottom:0.5rem;">Comuníquese con Nosotros</h2>
+      <div class="reveal reveal-d2 section-rule" style="margin-bottom:3rem;"></div>
+      <div class="reveal reveal-d3" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1.25rem;max-width:680px;margin:0 auto;">
+        <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:1rem;padding:1.75rem;text-align:center;">
+          <div style="width:48px;height:48px;background:#fff7ed;border-radius:0.75rem;display:flex;align-items:center;justify-content:center;margin:0 auto 0.75rem;font-size:1.5rem;">💬</div>
+          <p style="font-weight:700;color:var(--navy);font-size:0.875rem;margin-bottom:0.25rem;">WhatsApp</p>
+          <p style="font-size:0.8125rem;color:#94a3b8;">Respuesta inmediata</p>
+        </div>
+        <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:1rem;padding:1.75rem;text-align:center;">
+          <div style="width:48px;height:48px;background:#fff7ed;border-radius:0.75rem;display:flex;align-items:center;justify-content:center;margin:0 auto 0.75rem;font-size:1.5rem;">✉️</div>
+          <p style="font-weight:700;color:var(--navy);font-size:0.875rem;margin-bottom:0.25rem;">Email</p>
+          <p style="font-size:0.8125rem;color:#94a3b8;">integramec@email.com</p>
+        </div>
+        <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:1rem;padding:1.75rem;text-align:center;">
+          <div style="width:48px;height:48px;background:#fff7ed;border-radius:0.75rem;display:flex;align-items:center;justify-content:center;margin:0 auto 0.75rem;font-size:1.5rem;">📍</div>
+          <p style="font-weight:700;color:var(--navy);font-size:0.875rem;margin-bottom:0.25rem;">Ubicación</p>
+          <p style="font-size:0.8125rem;color:#94a3b8;">Rosario, Argentina</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer style="background:var(--navy);color:#94a3b8;padding:2.5rem 1.5rem;text-align:center;">
+    <div style="display:flex;align-items:center;justify-content:center;gap:0.75rem;margin-bottom:1rem;">
+      <div style="width:34px;height:34px;background:var(--orange);border-radius:6px;display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-weight:700;font-size:12px;color:#fff;">IM</div>
+      <span style="font-family:'Playfair Display',serif;font-weight:700;font-size:1.0625rem;color:#fff;">IntegraMec Rosario srl</span>
+    </div>
+    <p style="font-size:0.875rem;margin-bottom:1rem;">Ingeniería Electromecánica &amp; Mecatrónica Industrial desde 1983</p>
+    <div style="display:flex;justify-content:center;gap:1.5rem;margin-bottom:1.25rem;">
+      <a href="#" style="color:#64748b;text-decoration:none;font-size:0.875rem;transition:color 0.2s;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='#64748b'">Instagram</a>
+      <a href="#" style="color:#64748b;text-decoration:none;font-size:0.875rem;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='#64748b'">Facebook</a>
+    </div>
+    <p style="font-size:0.75rem;color:#374151;">© 2026 IntegraMec Rosario srl — Todos los derechos reservados</p>
+    <a href="index.html" style="display:inline-block;margin-top:0.75rem;font-size:0.75rem;color:#374151;text-decoration:none;" onmouseover="this.style.color='#64748b'" onmouseout="this.style.color='#374151'">← Volver al Hub</a>
+  </footer>
+
+  <script>
+    const io = new IntersectionObserver(
+      e => e.forEach(x => { if (x.isIntersecting) x.target.classList.add('in'); }),
+      { threshold: 0.10, rootMargin: '0px 0px -30px 0px' }
+    );
+    document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+  </script>
+</body>
 </html>
